@@ -1,10 +1,15 @@
 from modules.actions.app_actions import AppActions
 from modules.actions.file_actions import FileActions
+from modules.actions.terminal_actions import TerminalActions
 from modules.coding.project_builder import ProjectBuilder
+from modules.coding.deploy import DeployManager
+
 
 apps = AppActions()
 files = FileActions()
+terminal = TerminalActions()
 builder = ProjectBuilder()
+deploy = DeployManager()
 
 
 class ActionManager:
@@ -13,37 +18,64 @@ class ActionManager:
 
         cmd = command.lower().strip()
 
+        # ---------- Terminal Commands ----------
+
+        if cmd.startswith("terminal "):
+            return terminal.run(command[9:].strip())
+
+        if cmd.startswith("run python "):
+            return terminal.python(command[11:].strip())
+
         # ---------- Apps ----------
 
-        if "vs code" in cmd:
-            return apps.open_vscode()
-
-        if "chrome" in cmd:
-            return apps.open_chrome()
-
-        if "finder" in cmd:
-            return apps.open_finder()
-
-        if "terminal" in cmd:
+        if cmd == "open terminal":
             return apps.open_terminal()
 
-        if "whatsapp" in cmd:
+        if cmd == "open chrome" or cmd == "chrome":
+            return apps.open_chrome()
+
+        if cmd == "open finder" or cmd == "finder":
+            return apps.open_finder()
+
+        if cmd == "open gmail" or cmd == "gmail":
+            return apps.open_gmail()
+
+        if cmd == "open whatsapp" or cmd == "whatsapp":
             return apps.open_whatsapp()
 
-        if "gmail" in cmd or "email" in cmd:
-            return apps.open_gmail()
+        if cmd == "open vs code" or cmd == "vs code":
+            return apps.open_vscode()
 
         # ---------- Google ----------
 
         if cmd.startswith("search google"):
-            query = cmd.replace("search google", "").strip()
-            return apps.google_search(query)
+            query = command[len("search google"):].strip()
+
+            if query:
+                return apps.google_search(query)
+
+            return "Please enter a search query."
 
         # ---------- YouTube ----------
 
         if cmd.startswith("search youtube"):
-            query = cmd.replace("search youtube", "").strip()
-            return apps.youtube_search(query)
+            query = command[len("search youtube"):].strip()
+
+            if query:
+                return apps.youtube_search(query)
+
+            return "Please enter a search query."
+
+        # ---------- Files ----------
+
+        if cmd.startswith("create folder "):
+            return files.create_folder(command[14:].strip())
+
+        if cmd.startswith("create file "):
+            return files.create_file(command[12:].strip())
+
+        if cmd.startswith("read file "):
+            return files.read_file(command[10:].strip())
 
         # ---------- Website ----------
 
@@ -52,39 +84,39 @@ class ActionManager:
             name = "MyWebsite"
 
             if "called" in cmd:
-                name = cmd.split("called")[-1].strip().replace(" ", "_")
+                name = command.split("called", 1)[1].strip().replace(" ", "_")
 
-            return builder.create_website(
-                name,
-                command
-            )
+            return builder.create_website(name, command)
 
-        # ---------- Files ----------
+        if cmd.startswith("run website"):
 
-        if cmd.startswith("create folder "):
-            name = command[14:].strip()
-            return files.create_folder(name)
+            folder = command[len("run website"):].strip()
 
-        if cmd.startswith("create file "):
-            name = command[12:].strip()
-            return files.create_file(name)
+            if not folder:
+                folder = "MyWebsite"
 
-        if cmd.startswith("delete file "):
-            name = command[12:].strip()
-            return files.delete_file(name)
+            return deploy.run_html(folder)
 
-        if cmd.startswith("list files"):
-            return files.list_files()
+        # ---------- Git ----------
 
-        if cmd.startswith("rename file "):
-            try:
-                text = command[12:]
-                old_name, new_name = text.split(" to ")
-                return files.rename(
-                    old_name.strip(),
-                    new_name.strip()
-                )
-            except Exception:
-                return "Use: rename file old.txt to new.txt"
+        if cmd == "git status":
+            return terminal.git_status()
+
+        if cmd == "git push":
+            return deploy.git_push()
+
+        if cmd == "git add":
+            return terminal.git_add()
+
+        if cmd.startswith("git commit "):
+            message = command[len("git commit "):].strip()
+
+            if not message:
+                message = "Update"
+
+            return terminal.git_commit(message)
+
+        if cmd == "git pull":
+            return terminal.git_pull()
 
         return None
