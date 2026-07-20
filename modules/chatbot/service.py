@@ -2,11 +2,14 @@ import json
 
 from config.personality import SYSTEM_PROMPT
 from core.ai_client import client
+from core.planner import Planner
+from core.executor import Executor
 from modules.memory.memory_manager import MemoryManager
-from modules.actions.action_manager import ActionManager
+
 
 memory = MemoryManager()
-actions = ActionManager()
+planner = Planner()
+executor = Executor()
 
 
 class ChatbotService:
@@ -54,21 +57,23 @@ User message:
 
         self.observe(message)
 
-        # Computer Actions
-        result = actions.execute(message)
-        if result:
-            return result
+        # Planner
+        plan = planner.plan(message)
 
-        history = memory.get("history")
+        # Execute local actions
+        if plan != ["chat"]:
+            result = executor.execute(message)
 
-        if history is None:
-            history = []
+            if result:
+                return result
+
+        # Conversation history
+        history = memory.get("history") or []
 
         history.append(f"User: {message}")
 
         prompt = f"{SYSTEM_PROMPT}\n\n" + "\n".join(history)
 
-        # AI Router
         coding_words = [
             "code",
             "python",
@@ -79,13 +84,12 @@ User message:
             "react",
             "html",
             "css",
-            "program"
+            "program",
         ]
 
-        model = "qwen3:4b"
-
-        if any(word in message.lower() for word in coding_words):
-            model = "deepseek-r1:7b"
+        model = "deepseek-r1:7b" if any(
+            word in message.lower() for word in coding_words
+        ) else "qwen3:4b"
 
         reply = client.chat(model, prompt)
 

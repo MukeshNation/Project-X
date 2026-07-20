@@ -8,18 +8,19 @@ class ProjectBuilder:
     def __init__(self):
         self.generator = CodeGenerator()
 
-    def create_website(self, name, description):
+    def create_website(self, name: str, description: str):
 
-        folder = Path(name)
+        project = Path(name)
+        project.mkdir(parents=True, exist_ok=True)
 
-        folder.mkdir(parents=True, exist_ok=True)
+        website = self.generator.generate_website(description)
 
-        html = self.generator.generate_html(description)
-        css = self.generator.generate_css(description)
-        js = self.generator.generate_js(description)
+        html = website["html"]
+        css = website["css"]
+        js = website["js"]
 
-        (folder / "index.html").write_text(html, encoding="utf-8")
-        (folder / "style.css").write_text(css, encoding="utf-8")
-        (folder / "script.js").write_text(js, encoding="utf-8")
+        (project / "index.html").write_text(html, encoding="utf-8")
+        (project / "style.css").write_text(css, encoding="utf-8")
+        (project / "script.js").write_text(js, encoding="utf-8")
 
-        return f"Website '{name}' created successfully."
+        return f"✅ Website '{name}' created successfully."

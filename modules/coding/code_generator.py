@@ -1,4 +1,5 @@
 from core.ai_client import client
+import json
 
 
 class CodeGenerator:
@@ -94,3 +95,32 @@ Return only code.
 """
 
         return client.chat(self.model, prompt).strip()
+
+    def generate_website(self, description: str):
+
+        prompt = f"""
+You are an expert frontend developer.
+
+Create a complete responsive website.
+
+Requirements:
+{description}
+
+Return ONLY valid JSON in this format:
+
+{{
+  "html": "...",
+  "css": "...",
+  "js": "..."
+}}
+
+Do not explain.
+Do not use markdown.
+"""
+
+        response = client.chat(self.model, prompt).strip()
+
+        if response.startswith("```json"):
+            response = response.replace("```json", "").replace("```", "").strip()
+
+        return json.loads(response)
