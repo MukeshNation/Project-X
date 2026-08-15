@@ -1,0 +1,2 @@
+'use client'; import {useEffect,useState} from 'react'; import {API} from '../../lib/api';
+export default function Leaderboard(){const [rows,setRows]=useState<any[]>([]);useEffect(()=>{fetch(`${API}/api/leaderboard`).then(r=>r.json()).then(d=>setRows(d.players||[]))},[]);return <main><h1>Global leaderboard</h1><div className="panel">{rows.map((p,i)=><div className="row" key={p.id}><b>#{i+1}</b><span>{p.username}</span><strong>{p.score} XP</strong></div>)}</div></main>}

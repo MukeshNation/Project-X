@@ -1,0 +1,2 @@
+'use client'; import {useEffect,useState} from 'react'; import {supabase} from '../../lib/supabase';
+export default function Profile(){const [user,setUser]=useState<any>();useEffect(()=>{supabase.auth.getUser().then(({data})=>setUser(data.user))},[]);return <main><h1>Player profile</h1><div className="panel"><p>{user?.email||'Sign in to view your profile.'}</p><p>Manage your gamer tag, avatar and connected account.</p></div></main>}

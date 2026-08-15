@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: gaming-api
+    runtime: docker
+    dockerfilePath: ./apps/api/Dockerfile
+    healthCheckPath: /api/health
+  - type: web
+    name: gaming-web
+    runtime: docker
+    dockerfilePath: ./apps/web/Dockerfile
